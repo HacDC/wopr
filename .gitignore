@@ -1,0 +1,5 @@
+conf/users.conf
+logs/*
+backup/*
+BigMacJr.conf.*
+*.pyc
