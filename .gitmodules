@@ -1,0 +1,3 @@
+[submodule "plugins/notify"]
+	path = plugins/notify
+	url = http://git.fedorahosted.org/git/supybot-notify.git
