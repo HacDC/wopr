@@ -1,5 +1,9 @@
 #!/bin/bash
+# Copyright 2013 (c) haxwithaxe
+# All rights reserved.
+# See LICENSE file.
 
+###
 # selfserve_gateway.sh
 # requires:
 #   directory: cgi-bin

@@ -1,21 +1,40 @@
 #!/usr/bin/env python
+"""
+Copyright 2013 (c) haxwithaxe
+All rights reserved.
+See LICENSE file.
+"""
 
 import cgi
 import time
 import os
 import sys
+import socket
 import cgitb ;cgitb.enable()
+# try to import python3 name for configparser else use the old one.
+try:
+	import configparser
+except ImportError as e:
+	import ConfigParser as configparser
 
-'''
+"""
+!!!now depreciated!!!
 message format:
 	subject: Lights=$lightsOn
 	body: GPIO4=$GPIO4;GPIO5=$GPIO5;FA3=$FA3;FA4=$FA4;FA5=$FA5
 	date: $( echo $(date "+%A, %b %d at %l:%M %p") | tr ' ' '_') aka %A,_%b_%d_at_%l:%M_%p and TZ='EST5EDT,M3.2.0,M11.1.0'
-'''
-DATE_FORMAT='%A, %b %d at %I:%M %p' # %l == %I
-BODY_FIELD_SEP=';'
-BODY_KEY_VAL_SEP='='
-BODY_KEYS=('GPIO4', 'GPIO5', 'FA3', 'FA4', 'FA5')
+"""
+
+DATE_FORMAT="%A, %b %d at %I:%M %p" # %l == %I
+BODY_FIELD_SEP=";"
+BODY_KEY_VAL_SEP="="
+BODY_KEYS=("GPIO4", "GPIO5", "FA3", "FA4", "FA5")
+IRC_CHANNEL="#hacdc"
+R_PORT=5050
+
+conf = configparser.SafeConfigParser
+
+CONF_FILE = "wopr.conf"
 
 def set_GMT():
 	os.environ['TZ'] = 'GMT'
@@ -32,7 +51,6 @@ class Sensor:
 		self.boolean = boolean
 
 sensor_info = {'Lights':Sensor('Lights', 'one or more lights'), 'FA3':Sensor('FA3', 'hall light'), 'FA4':Sensor('FA4', 'main room light'), 'FA5':Sensor('FA5','work room light')}
-
 
 class Errors:
 	def __init__(self):
@@ -140,11 +158,20 @@ def handle_request(reqs):
 	body = valid_body(reqs_dict['body'])
 	if not body: errors.add('Invalid body field: %s' % reqs_dict['body'])
 	if date and subject and body:
+		conf.read(CONF_FILE)
 		subject.update(body)
 		sensor_vals = subject
-		return format_message(date, sensor_vals)
+		msg = format_message(date, sensor_vals)
+		tell_bot(msg, IRC_CHANNEL)
+		return msg
 	return errors.to_string()
-	
+
+def tell_bot(msg,channel):
+	data = '%s %s' % (channel,msg)
+	sock = socket.socket(socket.AF_INET)
+	sock.connect('127.0.0.1',R_PORT)
+	sock.send(data)
+	sock.close()
 
 def main(args=[]):
 	print('Content-Type: text/html\n\n')
