@@ -1,6 +1,6 @@
 [submodule "supybot-code"]
 	path = supybot-code
-	url = ./supybot-code/
+	url = git@github.com:haxwithaxe/supybot.git
 [submodule "plugins/notify"]
 	path = plugins/notify
 	url = git://git.fedorahosted.org/supybot-notify.git
