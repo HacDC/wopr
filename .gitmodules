@@ -1,9 +1,3 @@
-[submodule "supybot-code"]
-	path = supybot-code
-	url = git@github.com:haxwithaxe/supybot.git
-[submodule "plugins/notify"]
-	path = plugins/notify
-	url = git://git.fedorahosted.org/supybot-notify.git
-[submodule "plugins/config_stash"]
-	path = plugins/config_stash
-	url = git@github.com:haxwithaxe/supybot-config_stash.git
+[submodule "plugins/Status"]
+	path = plugins/Status
+	url = git@github.com:haxwithaxe/supybot-status.git
