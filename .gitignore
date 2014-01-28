@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-conf/users.conf
-logs/*
-backup/*
-BigMacJr.conf.*
-*.pyc
-=======
 conf/users.conf*
 logs/*
->>>>>>> 6cee53eb0c6f0ed89c9662acea1f911f2ad06c65
+backup/*
+*.bak*
+*.pyc
