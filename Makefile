@@ -13,6 +13,7 @@ test: $(BOTDIR)/conf/users.conf
 
 push: clean
 	git add --all
+	git status
 	git commit -a -m$(AUTOCOMMIT_MSG)
 	git push $(BOTREMOTE) $(BOTBRANCH)
 
