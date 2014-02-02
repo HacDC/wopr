@@ -12,6 +12,7 @@ test: $(BOTDIR)/conf/users.conf
 	@#FIXME add supybot test here
 
 push: clean
+	git add --all
 	git commit -a -m$(AUTOCOMMIT_MSG)
 	git push $(BOTREMOTE) $(BOTBRANCH)
 
