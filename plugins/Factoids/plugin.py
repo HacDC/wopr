@@ -1,6 +1,6 @@
 ###
 # Copyright (c) 2002-2005, Jeremiah Fincher
-# Copyright (c) 2009-2010, James McCoy
+# Copyright (c) 2009, James Vega
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -44,8 +44,7 @@ try:
     import sqlite
 except ImportError:
     raise callbacks.Error, 'You need to have PySQLite installed to use this ' \
-                           'plugin.  Download it at ' \
-                           '<http://code.google.com/p/pysqlite/>'
+                           'plugin.  Download it at <http://pysqlite.org/>'
 
 def getFactoid(irc, msg, args, state):
     assert not state.channel
@@ -63,8 +62,6 @@ def getFactoid(irc, msg, args, state):
             key.append(args.pop(0))
         else:
             value.append(args.pop(0))
-    if not key or not value:
-        raise callbacks.ArgumentError
     state.args.append(' '.join(key))
     state.args.append(' '.join(value))
 
@@ -167,7 +164,7 @@ class Factoids(callbacks.Plugin, plugins.ChannelDBHandler):
                           LIMIT 20""", key)
         return [t[0] for t in cursor.fetchall()]
 
-    def _replyFactoids(self, irc, msg, key, factoids,
+    def _replyFactoids(self, irc, channel, key, factoids,
                        number=0, error=True):
         if factoids:
             if number:
@@ -177,21 +174,17 @@ class Factoids(callbacks.Plugin, plugins.ChannelDBHandler):
                     irc.error('That\'s not a valid number for that key.')
                     return
             else:
-                env = {'key': key}
-                def prefixer(v):
-                    env['value'] = v
-                    formatter = self.registryValue('format', msg.args[0])
-                    return ircutils.standardSubstitute(irc, msg,
-                                                       formatter, env)
+                intro = self.registryValue('factoidPrefix', channel)
+                prefix = format('%q %s', key, intro)
                 if len(factoids) == 1:
-                    irc.reply(prefixer(factoids[0]))
+                    irc.reply(prefix + factoids[0])
                 else:
                     factoidsS = []
                     counter = 1
                     for factoid in factoids:
                         factoidsS.append(format('(#%i) %s', counter, factoid))
                         counter += 1
-                    irc.replies(factoidsS, prefixer=prefixer,
+                    irc.replies(factoidsS, prefixer=prefix,
                                 joiner=', or ', onlyPrefixFirst=True)
         elif error:
             irc.error('No factoid matches that key.')
@@ -202,7 +195,7 @@ class Factoids(callbacks.Plugin, plugins.ChannelDBHandler):
             if self.registryValue('replyWhenInvalidCommand', channel):
                 key = ' '.join(tokens)
                 factoids = self._lookupFactoid(channel, key)
-                self._replyFactoids(irc, msg, key, factoids, error=False)
+                self._replyFactoids(irc, channel, key, factoids, error=False)
 
     def whatis(self, irc, msg, args, channel, words):
         """[<channel>] <key> [<number>]
@@ -219,7 +212,7 @@ class Factoids(callbacks.Plugin, plugins.ChannelDBHandler):
                     irc.errorInvalid('key id')
         key = ' '.join(words)
         factoids = self._lookupFactoid(channel, key)
-        self._replyFactoids(irc, msg, key, factoids, number)
+        self._replyFactoids(irc, channel, key, factoids, number)
     whatis = wrap(whatis, ['channel', many('something')])
 
     def lock(self, irc, msg, args, channel, key):
@@ -304,7 +297,7 @@ class Factoids(callbacks.Plugin, plugins.ChannelDBHandler):
     def random(self, irc, msg, args, channel):
         """[<channel>]
 
-        Returns random factoids from the database for <channel>.  <channel>
+        Returns a random factoid from the database for <channel>.  <channel>
         is only necessary if the message isn't sent in the channel itself.
         """
         db = self.getDb(channel)
@@ -386,7 +379,7 @@ class Factoids(callbacks.Plugin, plugins.ChannelDBHandler):
         """[<channel>] [--values] [--{regexp} <value>] [<glob> ...]
 
         Searches the keyspace for keys matching <glob>.  If --regexp is given,
-        its associated value is taken as a regexp and matched against the keys.
+        it associated value is taken as a regexp and matched against the keys.
         If --values is given, search the value space instead of the keyspace.
         """
         if not optlist and not globs:
@@ -421,7 +414,7 @@ class Factoids(callbacks.Plugin, plugins.ChannelDBHandler):
             irc.reply('No keys matched that query.')
         elif cursor.rowcount == 1 and \
              self.registryValue('showFactoidIfOnlyOneMatch', channel):
-            self.whatis(irc, msg, [channel, cursor.fetchone()[0]])
+            self.whatis(irc, msg, [cursor.fetchone()[0]])
         elif cursor.rowcount > 100:
             irc.reply('More than 100 keys matched that query; '
                       'please narrow your query.')
