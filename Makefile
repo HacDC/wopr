@@ -1,12 +1,13 @@
 SHELL=/bin/bash
 
-.PHONY: run push test
+.PHONY: run push test clean
 
+SUPYBOT_EXEC ?= /usr/bin/supybot
 DAEMON ?= --daemon
 BOTNAME ?= wopr
 
 run: $(BOTCONF) $(BOTDIR)/conf/users.conf
-	supybot $(BOTCONFFILE) $(DAEMON)
+	$(SUPYBOT_EXEC) $(BOTCONFFILE) $(DAEMON)
 
 test: $(BOTDIR)/conf/users.conf
 	@#FIXME add supybot test here
