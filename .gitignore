@@ -4,3 +4,5 @@ backup/*
 *.bak*
 *.pyc
 debug.log
+data/web
+test-*
